@@ -6,9 +6,15 @@ import lombok.Data;
 @Data
 @Builder
 public class RowData {
-    String id;
-    String firstName;
-    String lastNAme;
-    String ssn;
-    String comment;
+
+    int bikeId;
+    String startTime;
+    String stopTime;
+    int startStationId;
+    String startStationName;
+    int endStationId;
+    String endStationName;
+    String userType;
+    int birthYear;
+    int gender;
 }

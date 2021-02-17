@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface SearchService {
 
-    SearchResponse search(String searchString, int returnCount);
+    SearchResponse search(String searchString, int returnCount, String onColumn);
 
-    Map<String, String> writeRowData(String indexName);
+    Map<String, String> writeRowData(String indexName, String onColumn);
 }

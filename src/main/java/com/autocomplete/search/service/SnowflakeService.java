@@ -19,7 +19,7 @@ import java.util.Properties;
 @Service
 public class SnowflakeService implements DataService {
 
-    private static int fetchSize = 1000;
+    private static final int fetchSize = 1000;
 
     @Autowired
     static AppProperties appProperties;
@@ -49,29 +49,39 @@ public class SnowflakeService implements DataService {
         List<RowData> dataList = new ArrayList<>();
         try {
             Connection conn = getSnowflakeConnection();
-
             PreparedStatement statement = conn.prepareStatement(getQuery());
             statement.setFetchSize(fetchSize);
+
             ResultSet resultSet = statement.executeQuery();
             while(resultSet.next()) {
-                RowData data = RowData.builder()
-                        .id(resultSet.getString("ID"))
-                        .firstName(resultSet.getString("FIRST_NAME"))
-                        .lastNAme(resultSet.getString("LAST_NAME"))
-                        .ssn(resultSet.getString("SSN"))
-                        .comment(resultSet.getString("COMMENT"))
+                RowData rowData = RowData.builder()
+                        .bikeId(resultSet.getInt("BIKEID"))
+                        .startTime(resultSet.getString("STARTTIME"))
+                        .stopTime(resultSet.getString("STOPTIME"))
+                        .startStationId(resultSet.getInt("START_STATION_ID"))
+                        .startStationName(resultSet.getString("START_STATION_NAME"))
+                        .endStationId(resultSet.getInt("END_STATION_ID"))
+                        .endStationName(resultSet.getString("END_STATION_NAME"))
+                        .userType(resultSet.getString("USERTYPE"))
+                        .birthYear(resultSet.getInt("BIRTH_YEAR"))
+                        .gender(resultSet.getInt("GENDER"))
                         .build();
-                dataList.add(data);
+                dataList.add(rowData);
             }
             conn.close();
         } catch (SQLException se) {
-            System.out.println("Connection error!!");
+            log.error("Connection error!!");
         }
-        System.out.println("Success: " + dataList);
+        log.info("Data read complete - record size: " + dataList.size());
         return dataList;
     }
 
     private String getQuery() {
-        return new String("SELECT * FROM SALES_DB.DEV1.AUTHORITIES");
+        StringBuilder query = new StringBuilder()
+                .append(" SELECT BIKEID, STARTTIME, STOPTIME, START_STATION_ID, START_STATION_NAME,")
+                .append(" END_STATION_ID, END_STATION_NAME, USERTYPE, BIRTH_YEAR, GENDER")
+                .append(" FROM CITIBIKE.SCHEMA.TRIPS")
+                .append(" LIMIT 1000");
+        return query.toString();
     }
 }
