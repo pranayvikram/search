@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "selectedColumn": {
+      "type": "text",
+      "fields": {
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    }
+  }
+}

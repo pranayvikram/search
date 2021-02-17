@@ -1,0 +1,62 @@
+version: '3.7'
+services:
+  elasticsearch:
+    image: docker.elastic.co.elasticsearch/elasticsearch:7.9.3
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - xpack.security.enabled=false
+      - xpack.monotoring.enabled=false
+      - xpack.graph.enabled=fales
+      - xpack.watcher.eabled=false
+      - discovery.type=single-node
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 262144
+        hard: 262144
+    cap_add:
+      - IPC_LOCK
+    volums:
+      - elasticsearch-data-volume:/usr/share/elasticsearch/data
+      - ./hunspell:/usr/share/elasticsearch/config/hunspell/en_US/
+    deploy:
+      placement:
+        constraints:
+          - "node.role==worker"
+    ports:
+      - 127.0.0.1.9200:9200
+      - 127.0.0.1.9300:9300
+    networks:
+      - elastic
+    command: sh -c './bin/elasticsearch-plugin install analysis-phonetic && exec /usr/local/bin/docker-entrypoint.sh
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.9.3
+    container_name: kibana
+    restart: always
+    environment:
+      elasticsearch_host: http://elasticsearch:9200
+      cluster.name: es-docker-cluster
+    ports:
+      - 5601:5601
+    networks:
+      - elastic
+    depends_on:
+      - elasticsearch
+
+volume:
+  elasticsearch-data-volume:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge

@@ -1,0 +1,31 @@
+{
+  "number_of_shards": 1,
+  "number_of_replicas": 0,
+  "index": {
+    "analysis": {
+      "analyzer": {
+        "phonetic_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "phonetic_filter",
+            "hunspell_filter"
+          ]
+        }
+      },
+      "filter": {
+        "phonetic_filter": {
+          "type": "phonetic",
+          "encoder": "metaphone",
+          "replace": false
+        },
+        "hunspell_filter": {
+          "type": "phonetic",
+          "language": "en_US",
+          "dedup": false
+        }
+      }
+    }
+  }
+}
