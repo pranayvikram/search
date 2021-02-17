@@ -6,8 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,18 +22,19 @@ public class SnowflakeService implements DataService {
     private static int fetchSize = 1000;
 
     @Autowired
-    static DataSource dataSource;
-
-    @Autowired
     static AppProperties appProperties;
 
+    public SnowflakeService(final AppProperties appProperties) {
+        SnowflakeService.appProperties = appProperties;
+    }
+
     private Connection getSnowflakeConnection() throws SQLException {
-        return dataSource.getConnection();
+        return DriverManager.getConnection(appProperties.getDatasourceUrl(), getConfiguration());
     }
 
     private Properties getConfiguration() {
         Properties prop = new Properties();
-        prop.put("user", appProperties.getUser());
+        prop.put("user", appProperties.getUsername());
         prop.put("password", appProperties.getPassword());
         prop.put("db", appProperties.getDb());
         prop.put("schema", appProperties.getSchema());
@@ -49,8 +50,7 @@ public class SnowflakeService implements DataService {
         try {
             Connection conn = getSnowflakeConnection();
 
-            PreparedStatement statement = conn.prepareStatement(getQuery(),
-                    ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            PreparedStatement statement = conn.prepareStatement(getQuery());
             statement.setFetchSize(fetchSize);
             ResultSet resultSet = statement.executeQuery();
             while(resultSet.next()) {

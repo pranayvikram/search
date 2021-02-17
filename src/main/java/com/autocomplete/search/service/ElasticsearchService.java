@@ -90,7 +90,6 @@ public class ElasticsearchService implements SearchService {
 
     @Override
     public Map<String, String> writeRowData(String indexName) {
-
         List<RowData> dataList = dataService.readData();
         Map<String, String> statusMap = new HashMap<>();
         try {

@@ -7,25 +7,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
 @Slf4j
-@RestController("/")
+@RestController()
 public class ElasticsearchController {
 
     @Autowired
     SearchService searchService;
 
-    @GetMapping(value = "search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(@PathVariable("string") final String searchString,
                                  @PathVariable("size") final int returnSize) {
         return searchService.search(searchString, returnSize);
     }
 
-    @GetMapping(value = "transfer", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, String> transfer(@PathVariable("indexName") final String indexName) {
+    @GetMapping(value = "transfer" , consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, String> transfer(@RequestParam("indexName") final String indexName) {
         Map<String, String> statusMap = searchService.writeRowData(indexName);
         return statusMap;
     }

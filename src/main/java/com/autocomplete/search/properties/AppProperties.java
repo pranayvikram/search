@@ -9,10 +9,12 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties("app")
 public class AppProperties {
 
-    private String user;
+    private String username;
     private String password;
     private String db;
     private String schema;
     private String warehouse;
     private String role;
+    private String datasourceUrl;
+    private String driverClassName;
 }
