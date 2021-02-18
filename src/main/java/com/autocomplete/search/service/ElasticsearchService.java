@@ -1,6 +1,5 @@
 package com.autocomplete.search.service;
 
-import com.autocomplete.search.configuration.ElasticsearchDataAutoConfiguredClient;
 import com.autocomplete.search.model.RowData;
 import com.autocomplete.search.util.Utility;
 import lombok.extern.slf4j.Slf4j;
@@ -41,13 +40,13 @@ public class ElasticsearchService implements SearchService {
 
     private static final String UPLOADED = "recordsUploaded";
     private static final String INDEX_SETTING = "indexSetting.json";
-    private final ElasticsearchDataAutoConfiguredClient highLevelClient;
+    private final ElasticsearchClientService highLevelClient;
 
     @Autowired
     DataService dataService;
 
     @Autowired
-    ElasticsearchService(ElasticsearchDataAutoConfiguredClient client) {
+    ElasticsearchService(ElasticsearchClientService client) {
         this.highLevelClient = client;
     }
 
@@ -101,22 +100,27 @@ public class ElasticsearchService implements SearchService {
         return statusMap;
     }
 
-    private void overwriteIndex(String indexName, String onColumn) throws IOException {
+    private void overwriteIndex(String indexName, String onColumn) throws Exception {
 
-        String indexSetting = Utility.readResource(INDEX_SETTING);
-        Settings setting = Settings.builder().loadFromSource(indexSetting, XContentType.JSON).build();
+        try {
+            String indexSetting = Utility.readResource(INDEX_SETTING);
+            Settings setting = Settings.builder().loadFromSource(indexSetting, XContentType.JSON).build();
 
-        XContentBuilder analyzerMapping = getAnalyzerMapping(onColumn);
-        CreateIndexRequest request = new CreateIndexRequest(indexName);
-        request.settings(setting);
-        request.mapping(analyzerMapping);
+            XContentBuilder analyzerMapping = getAnalyzerMapping(onColumn);
+            CreateIndexRequest request = new CreateIndexRequest(indexName);
+            request.settings(setting);
+            request.mapping(analyzerMapping);
 
-        IndicesClient indicesClient = highLevelClient.getIndicesClient();
-        if (indicesClient.exists(new GetIndexRequest(indexName), RequestOptions.DEFAULT)) {
-            indicesClient.close(new CloseIndexRequest(indexName), RequestOptions.DEFAULT);
-            indicesClient.delete(new DeleteIndexRequest(indexName), RequestOptions.DEFAULT);
+            IndicesClient indicesClient = highLevelClient.getIndicesClient();
+            if (indicesClient.exists(new GetIndexRequest(indexName), RequestOptions.DEFAULT)) {
+                indicesClient.close(new CloseIndexRequest(indexName), RequestOptions.DEFAULT);
+                indicesClient.delete(new DeleteIndexRequest(indexName), RequestOptions.DEFAULT);
+            }
+            indicesClient.create(request, RequestOptions.DEFAULT);
+        } catch (Exception ex) {
+            log.error("Failed to overwrite index - " + ex.getMessage());
+            throw ex;
         }
-        indicesClient.create(request, RequestOptions.DEFAULT);
     }
 
     private int createIndexRequest(final String indexName, final List<RowData> dataList) {
